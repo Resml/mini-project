@@ -15,15 +15,24 @@
     }
     .qr-placeholder {
       margin: 20px auto;
-      padding: 15px;
+      padding: 5px;
       background: white;
       display: inline-block;
       border-radius: 8px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 320px;
+      height: 320px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     .qr-placeholder img {
-      width: 220px;
-      height: 220px;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      transform: scale(1.1); /* Slight zoom to crop out extra screenshot UI */
     }
     #payBtn {
       background-color: #28a745;
@@ -64,7 +73,7 @@
       <p>Scan the QR Code below using any UPI App (GPay, PhonePe, Paytm)</p>
       
       <div class="qr-placeholder">
-        <img src="scanner.jpeg" id="qrImage" alt="Payment Scanner QR Code" style="object-fit: contain;">
+        <img src="scanner.jpeg" id="qrImage" alt="Payment Scanner QR Code">
       </div>
       
       <button id="payBtn" onclick="processPayment()" style="width: 100%; margin-top: 15px;">Simulate Successful Payment</button>
