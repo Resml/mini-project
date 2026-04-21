@@ -64,7 +64,7 @@
       <p>Scan the QR Code below using any UPI App (GPay, PhonePe, Paytm)</p>
       
       <div class="qr-placeholder">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=busgo@upi&pn=BusReservation&am=0&cu=INR" id="qrImage" alt="Mock UPI QR Code">
+        <img src="scanner.jpeg" id="qrImage" alt="Payment Scanner QR Code" style="object-fit: contain;">
       </div>
       
       <button id="payBtn" onclick="processPayment()" style="width: 100%; margin-top: 15px;">Simulate Successful Payment</button>
@@ -81,10 +81,6 @@
         window.location.href = "index.html";
     } else {
         document.getElementById("payAmount").innerText = "Rs. " + pending.total_amount;
-        
-        // Dynamically encode the exact amount into the QR code!
-        const upiString = `upi://pay?pa=busgo@upi&pn=BusGoTravels&am=${pending.total_amount}&cu=INR`;
-        document.getElementById("qrImage").src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiString)}`;
     }
 
     function processPayment() {
