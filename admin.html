@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Admin Panel - Bus Reservation</h1>
+    <nav id="navMenu"></nav>
+  </header>
+
+  <div class="container">
+    <h2>Recent Bookings</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Ref</th>
+          <th>User ID</th>
+          <th>Bus ID</th>
+          <th>Date</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="bookingsData">
+        <tr><td colspan="6">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="container">
+    <h2>Add New Bus</h2>
+    <form id="addBusForm">
+      <div class="form-group">
+        <label>Bus Name / Travels:</label>
+        <input type="text" id="bName" required>
+      </div>
+      <div class="form-group">
+        <label>Source:</label>
+        <input type="text" id="bSrc" required>
+      </div>
+      <div class="form-group">
+        <label>Destination:</label>
+        <input type="text" id="bDest" required>
+      </div>
+      <div class="form-group">
+        <label>Bus Type:</label>
+        <select id="bType">
+          <option>A/C Sleeper</option>
+          <option>Non A/C Sleeper</option>
+          <option>A/C Seater</option>
+          <option>Non A/C Seater</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Base Fare (Rs.):</label>
+        <input type="number" id="bFare" required>
+      </div>
+      <button type="submit">Add Bus Details</button>
+    </form>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const user = JSON.parse(localStorage.getItem("bus_user"));
+        if(!user || user.role !== 'admin') {
+            window.location.href = "login.html";
+            return;
+        }
+
+        // Fetch bookings
+        fetch(SUPABASE_URL + "/bookings?select=booking_reference,user_id,bus_id,journey_date,total_amount,status&order=booking_date.desc&limit=10", { headers: headers })
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById("bookingsData");
+            tbody.innerHTML = "";
+            if(data.length > 0) {
+                data.forEach(b => {
+                    tbody.innerHTML += `<tr>
+                        <td>${b.booking_reference}</td>
+                        <td>U-ID ${b.user_id}</td>
+                        <td>BUS-ID ${b.bus_id}</td>
+                        <td>${b.journey_date}</td>
+                        <td>${b.total_amount}</td>
+                        <td>${b.status}</td>
+                    </tr>`;
+                });
+            } else {
+                tbody.innerHTML = "<tr><td colspan='6'>No bookings found.</td></tr>";
+            }
+        });
+
+        // Add Bus
+        document.getElementById("addBusForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById("bName").value,
+                source: document.getElementById("bSrc").value,
+                destination: document.getElementById("bDest").value,
+                bus_type: document.getElementById("bType").value,
+                fare: parseFloat(document.getElementById("bFare").value)
+            };
+
+            fetch(SUPABASE_URL + '/buses', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(payload)
+            }).then(res => {
+                alert("Bus added successfully!");
+                document.getElementById("addBusForm").reset();
+            });
+        });
+    });
+  </script>
+</body>
+</html>

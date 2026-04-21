@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Search Results</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Bus Reservation System</h1>
+    <nav id="navMenu"></nav>
+  </header>
+
+  <div class="container">
+    <h2 id="searchTitle">Available Buses</h2>
+    
+    <table>
+      <thead>
+        <tr>
+          <th>Travels</th>
+          <th>Type</th>
+          <th>Fare (Rs.)</th>
+          <th>Total Fare</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="searchResults">
+        <tr><td colspan="5">Searching database...</td></tr>
+      </tbody>
+    </table>
+    <br/>
+    <a href="index.html" style="display:inline-block; padding: 10px 15px; background: #333; color: white; text-decoration: none; border-radius: 4px;">Back to Search</a>
+  </div>
+  
+  <script src="js/main.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const source = params.get('source');
+    const destination = params.get('destination');
+    const date = params.get('date');
+    const passengers = parseInt(params.get('passengers') || 1);
+
+    document.getElementById("searchTitle").innerText = `Available Buses: ${source} to ${destination}`;
+
+    fetch(`${SUPABASE_URL}/buses?source=eq.${source}&destination=eq.${destination}`, { headers: headers })
+    .then(res => res.json())
+    .then(data => {
+        const tbody = document.getElementById("searchResults");
+        tbody.innerHTML = "";
+        if(data.length > 0) {
+            data.forEach(bus => {
+                const total = bus.fare * passengers;
+                tbody.innerHTML += `<tr>
+                    <td>${bus.name}</td>
+                    <td>${bus.bus_type}</td>
+                    <td>${bus.fare}</td>
+                    <td><b>${total}</b></td>
+                    <td><button onclick="bookTicket(${bus.id}, '${date}', ${passengers}, ${total})">Book Now</button></td>
+                </tr>`;
+            });
+        } else {
+            tbody.innerHTML = "<tr><td colspan='5'>Sorry, no buses found for this route.</td></tr>";
+        }
+    });
+
+    function bookTicket(busId, jDate, pass, total) {
+        const user = JSON.parse(localStorage.getItem("bus_user"));
+        if (!user) {
+            alert("Please login first to book tickets!");
+            window.location.href = "login.html";
+            return;
+        }
+
+        const bookingRef = "B" + Math.floor(1000 + Math.random() * 9000);
+        const payload = {
+            booking_reference: bookingRef,
+            user_id: user.id,
+            bus_id: busId,
+            journey_date: jDate,
+            passengers: pass,
+            total_amount: total,
+            status: 'Confirmed'
+        };
+
+        fetch(SUPABASE_URL + '/bookings', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(payload)
+        }).then(res => res.json()).then(data => {
+            alert("Booking Successful! Reference: " + bookingRef);
+            window.location.href = "index.html";
+        });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bus Reservation System</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Bus Reservation System</h1>
+    <nav id="navMenu">
+      <!-- Injected by JS -->
+    </nav>
+  </header>
+
+  <div class="container">
+    <h2>Search for Bus Tickets</h2>
+    <form action="search.html" method="GET">
+      <div class="form-group">
+        <label for="source">Source City:</label>
+        <select id="source" name="source" required>
+          <option value="Pune">Pune</option>
+          <option value="Mumbai">Mumbai</option>
+          <option value="Nagpur">Nagpur</option>
+          <option value="Nashik">Nashik</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="destination">Destination City:</label>
+        <select id="destination" name="destination" required>
+          <option value="Mumbai">Mumbai</option>
+          <option value="Pune">Pune</option>
+          <option value="Aurangabad">Aurangabad</option>
+          <option value="Goa">Goa</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="date">Journey Date:</label>
+        <input type="date" id="date" name="date" required>
+      </div>
+
+      <div class="form-group">
+        <label for="passengers">No. of Passengers:</label>
+        <input type="number" id="passengers" name="passengers" min="1" max="10" value="1" required>
+      </div>
+
+      <button type="submit">Search Buses</button>
+    </form>
+  </div>
+
+  <div class="container">
+    <h2>Popular Routes and Fares</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Travels</th>
+          <th>Source</th>
+          <th>Destination</th>
+          <th>Bus Type</th>
+          <th>Fare (Rs.)</th>
+        </tr>
+      </thead>
+      <tbody id="popularRoutes">
+        <tr><td colspan="5">Loading buses from Supabase Database...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Fetch 5 buses
+        fetch(SUPABASE_URL + "/buses?select=*&limit=5", { headers: headers })
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById("popularRoutes");
+            tbody.innerHTML = "";
+            if(data.length > 0) {
+                data.forEach(bus => {
+                    tbody.innerHTML += `<tr>
+                        <td>${bus.name}</td>
+                        <td>${bus.source}</td>
+                        <td>${bus.destination}</td>
+                        <td>${bus.bus_type}</td>
+                        <td>${bus.fare}</td>
+                    </tr>`;
+                });
+            } else {
+                tbody.innerHTML = "<tr><td colspan='5'>No buses found in database.</td></tr>";
+            }
+        }).catch(err => {
+            console.error(err);
+            document.getElementById("popularRoutes").innerHTML = "<tr><td colspan='5'>Error connecting to database</td></tr>";
+        });
+    });
+  </script>
+</body>
+</html>
