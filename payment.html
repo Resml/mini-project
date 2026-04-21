@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mock Payment - Bus Reservation</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <style>
+    .payment-box {
+      text-align: center;
+      padding: 30px;
+      border: 2px dashed #004080;
+      border-radius: 10px;
+      margin-top: 20px;
+      background: #fafafa;
+    }
+    .qr-placeholder {
+      margin: 20px auto;
+      padding: 15px;
+      background: white;
+      display: inline-block;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .qr-placeholder img {
+      width: 220px;
+      height: 220px;
+    }
+    #payBtn {
+      background-color: #28a745;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    #payBtn:hover {
+      background-color: #218838;
+    }
+    .mock-warning {
+      color: #721c24;
+      background-color: #f8d7da;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Bus Reservation System</h1>
+    <nav id="navMenu">
+      <a href="index.html">Cancel Transaction</a>
+    </nav>
+  </header>
+
+  <div class="container" style="max-width: 500px;">
+    <h2>Secure Payment Gateway</h2>
+    <div class="payment-box">
+      
+      <div class="mock-warning">
+        <strong>Dummy Transaction Only</strong><br/>
+        DO NOT actually scan and pay. This is for demonstration purposes.
+      </div>
+
+      <h3>Amount to Pay: <span id="payAmount" style="color: #004080; font-size: 28px;">Rs. 0</span></h3>
+      <p>Scan the QR Code below using any UPI App (GPay, PhonePe, Paytm)</p>
+      
+      <div class="qr-placeholder">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=busgo@upi&pn=BusReservation&am=0&cu=INR" id="qrImage" alt="Mock UPI QR Code">
+      </div>
+      
+      <button id="payBtn" onclick="processPayment()" style="width: 100%; margin-top: 15px;">Simulate Successful Payment</button>
+      <div id="loader" style="display: none; margin-top: 15px; font-weight: bold; color: #004080; font-size: 18px;">🔄 Processing Payment... Please wait.</div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    const pending = JSON.parse(sessionStorage.getItem("pending_booking"));
+    
+    if (!pending) {
+        alert("No pending booking found! Redirecting...");
+        window.location.href = "index.html";
+    } else {
+        document.getElementById("payAmount").innerText = "Rs. " + pending.total_amount;
+        
+        // Dynamically encode the exact amount into the QR code!
+        const upiString = `upi://pay?pa=busgo@upi&pn=BusGoTravels&am=${pending.total_amount}&cu=INR`;
+        document.getElementById("qrImage").src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiString)}`;
+    }
+
+    function processPayment() {
+        document.getElementById("payBtn").style.display = "none";
+        document.getElementById("loader").style.display = "block";
+        
+        // Simulate a realist 2.5 second network delay for payment verification
+        setTimeout(() => {
+            fetch(SUPABASE_URL + '/bookings', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(pending)
+            }).then(res => {
+                if (res.ok) {
+                    sessionStorage.removeItem("pending_booking");
+                    alert("✅ Payment Successful! Your e-Ticket has been generated safely.");
+                    window.location.href = "my_bookings.html";
+                } else {
+                    alert("Database Error saving booking!");
+                    document.getElementById("payBtn").style.display = "block";
+                    document.getElementById("loader").style.display = "none";
+                }
+            }).catch(err => {
+                alert("Network Error!");
+                window.location.href = "index.html";
+            });
+        }, 2500);
+    }
+  </script>
+</body>
+</html>

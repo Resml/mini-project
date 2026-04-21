@@ -82,14 +82,9 @@
             status: 'Confirmed'
         };
 
-        fetch(SUPABASE_URL + '/bookings', {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(payload)
-        }).then(res => res.json()).then(data => {
-            alert("Booking Successful! Reference: " + bookingRef);
-            window.location.href = "index.html";
-        });
+        // Redirect to mock payment instead of booking immediately
+        sessionStorage.setItem("pending_booking", JSON.stringify(payload));
+        window.location.href = "payment.html";
     }
   </script>
 </body>
