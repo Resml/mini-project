@@ -22,10 +22,11 @@
           <th>Passengers</th>
           <th>Total Amount (Rs.)</th>
           <th>Status</th>
+          <th>Ticket</th>
         </tr>
       </thead>
       <tbody id="myBookingsData">
-        <tr><td colspan="6">Loading your bookings...</td></tr>
+        <tr><td colspan="7">Loading your bookings...</td></tr>
       </tbody>
     </table>
     <br/>
@@ -57,11 +58,12 @@
                         <td>${b.journey_date}</td>
                         <td>${b.passengers}</td>
                         <td>${b.total_amount}</td>
-                        <td>${b.status}</td>
+                        <td><span style="color: green; font-weight: bold;">${b.status}</span></td>
+                        <td><a href="ticket.html?ref=${b.booking_reference}" style="padding: 6px 12px; background: #28a745; color: white; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: bold; white-space: nowrap;">🎫 View Ticket</a></td>
                     </tr>`;
                 });
             } else {
-                tbody.innerHTML = "<tr><td colspan='6'>You have not booked any buses yet!</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='7'>You have not booked any buses yet!</td></tr>";
             }
         }).catch(err => {
             console.error(err);

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your E-Ticket</title>
+  <style>
+    body { font-family: 'Arial', sans-serif; background-color: #e6ecf0; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;}
+    .ticket-wrapper { background: white; width: 100%; max-width: 500px; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; margin-top: 20px;}
+    .ticket-header { background: #004080; color: white; padding: 25px; text-align: center; position: relative; }
+    .ticket-header h2 { margin: 0; font-size: 26px; letter-spacing: 1px; text-transform: uppercase; display: flex; justify-content: center; align-items: center; gap: 10px;}
+    .ticket-header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
+    .ticket-body { padding: 30px; border-bottom: 2px dashed #ccc; position: relative; background: #fff;}
+    
+    /* Boarding pass edge cutouts */
+    .ticket-body::after, .ticket-body::before { content: ''; position: absolute; bottom: -12px; width: 24px; height: 24px; background: #e6ecf0; border-radius: 50%; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+    .ticket-body::before { left: -12px; }
+    .ticket-body::after { right: -12px; }
+    
+    .t-row { display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .t-col { display: flex; flex-direction: column; width: 48%; }
+    .t-label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; font-weight: bold;}
+    .t-val { font-size: 16px; font-weight: bold; color: #222; }
+    
+    .airport-codes { display: flex; align-items: center; justify-content: space-between; margin: 25px 0; background: #f4f7fb; padding: 20px; border-radius: 10px;}
+    .code-box { text-align: center; flex: 1;}
+    .code-box h3 { margin: 0; font-size: 28px; color: #004080; }
+    .code-box p { margin: 5px 0 0; font-size: 13px; color: #555; font-weight: bold;}
+    .arrow { font-size: 24px; color: #004080; font-weight: bold;}
+    
+    .ticket-footer { background: #fff; padding: 30px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .qr-mock { width: 140px; height: 140px; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 8px;}
+    
+    .btn-container { display: flex; gap: 10px; width: 100%; justify-content: center; margin-top: 20px;}
+    .btn-print { flex: 1; padding: 14px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; transition: background 0.2s; text-decoration: none;}
+    .btn-print:hover { background: #218838; }
+    .btn-back { background: #555; }
+    .btn-back:hover { background: #333; }
+    
+    @media print {
+      body { background: white; padding: 0; }
+      .ticket-wrapper { box-shadow: none; border: 1px solid #ddd; margin-top: 0; max-width: 100%;}
+      .btn-container { display: none !important; }
+      .ticket-body::after, .ticket-body::before { display: none; }
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="ticket-wrapper" id="ticketContent" style="display:none;">
+    <div class="ticket-header">
+      <h2>🚌 BUSGO TRAVELS</h2>
+      <p>Official E-Ticket & Boarding Pass</p>
+    </div>
+    
+    <div class="ticket-body">
+      <div class="t-row">
+        <div class="t-col">
+          <span class="t-label">Passenger Name</span>
+          <span class="t-val" id="t-name">Loading...</span>
+        </div>
+        <div class="t-col" style="text-align: right;">
+          <span class="t-label">Booking PNR</span>
+          <span class="t-val" id="t-pnr" style="color: #004080; font-size: 18px;">---</span>
+        </div>
+      </div>
+      
+      <div class="airport-codes">
+        <div class="code-box">
+          <h3 id="t-src-code">SRC</h3>
+          <p id="t-src">Origin</p>
+        </div>
+        <div class="arrow">➔</div>
+        <div class="code-box">
+          <h3 id="t-dest-code">DST</h3>
+          <p id="t-dest">Destination</p>
+        </div>
+      </div>
+
+      <div class="t-row">
+        <div class="t-col">
+          <span class="t-label">Journey Date</span>
+          <span class="t-val" id="t-date">---</span>
+        </div>
+        <div class="t-col" style="text-align: right;">
+          <span class="t-label">Departure Time</span>
+          <span class="t-val" id="t-time">---</span>
+        </div>
+      </div>
+      
+      <div class="t-row" style="margin-bottom: 0;">
+        <div class="t-col">
+          <span class="t-label">Seats Booked</span>
+          <span class="t-val"><span id="t-passengers">0</span> Travellers</span>
+        </div>
+        <div class="t-col" style="text-align: right;">
+          <span class="t-label">Amount Paid</span>
+          <span class="t-val" style="color: #28a745;">Rs. <span id="t-amount">0</span></span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="ticket-footer">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TicketVerified" class="qr-mock" id="t-qr" alt="Scan Ticket">
+      <p style="color: #777; font-size: 13px; margin: 10px 0 0;">Please present this QR code to the conductor while boarding. Valid ID proof may be required.</p>
+      
+      <div class="btn-container">
+          <button class="btn-print" onclick="window.print()">🖨️ Print Ticket</button>
+          <a href="my_bookings.html" class="btn-print btn-back" style="text-align: center;">🔙 Close</a>
+      </div>
+    </div>
+  </div>
+
+  <h2 id="loadingMsg" style="color: #444; font-family: sans-serif; text-align: center; width: 100%; margin-top: 50px;">Fetching your ticket...</h2>
+
+  <script src="js/main.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const ref = urlParams.get('ref');
+    const user = JSON.parse(localStorage.getItem("bus_user"));
+
+    if (!ref || !user) {
+        alert("Invalid ticket session.");
+        window.location.href = "index.html";
+    }
+
+    fetch(`${SUPABASE_URL}/bookings?booking_reference=eq.${ref}&select=*,buses(*)`, { headers: headers })
+        .then(res => res.json())
+        .then(data => {
+            if(data.length > 0) {
+                const b = data[0];
+                document.getElementById("loadingMsg").style.display = "none";
+                document.getElementById("ticketContent").style.display = "flex";
+
+                document.getElementById("t-pnr").innerText = b.booking_reference;
+                document.getElementById("t-name").innerText = user.name;
+                document.getElementById("t-date").innerText = b.journey_date;
+                document.getElementById("t-passengers").innerText = b.passengers;
+                document.getElementById("t-amount").innerText = b.total_amount;
+                
+                // Embed dynamic barcode data
+                document.getElementById("t-qr").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=VERIFIED_${b.booking_reference}_${user.name.replace(/ /g, '%20')}`;
+
+                // Extract bus details
+                if (b.buses) {
+                    const src = b.buses.source;
+                    const dest = b.buses.destination;
+                    document.getElementById("t-src").innerText = src;
+                    document.getElementById("t-dest").innerText = dest;
+                    document.getElementById("t-src-code").innerText = src.substring(0,3).toUpperCase();
+                    document.getElementById("t-dest-code").innerText = dest.substring(0,3).toUpperCase();
+                    document.getElementById("t-time").innerText = b.buses.departure_time || "09:30 AM";
+                } else {
+                    document.getElementById("t-src").innerText = "Bus Route";
+                    document.getElementById("t-src-code").innerText = "BUS";
+                    document.getElementById("t-dest-code").innerText = "GO!";
+                }
+            } else {
+                document.getElementById("loadingMsg").innerText = "Error: Ticket Not Found!";
+            }
+        })
+        .catch(err => {
+            document.getElementById("loadingMsg").innerText = "Connection Error fetching ticket!";
+        });
+  </script>
+</body>
+</html>
