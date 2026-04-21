@@ -110,3 +110,47 @@ tr:nth-child(even) {
   background-color: #333;
   color: white;
 }
+
+/* Mobile Responsive */
+@media screen and (max-width: 768px) {
+  header {
+    flex-direction: column;
+    text-align: center;
+    padding: 15px;
+  }
+  
+  header h1 {
+    margin-bottom: 15px;
+    font-size: 22px;
+  }
+  
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  nav a {
+    margin-left: 0;
+    font-size: 14px;
+    margin: 5px;
+  }
+  
+  .container {
+    width: 92%;
+    padding: 15px;
+    margin: 15px auto;
+  }
+  
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  button {
+    width: 100%;
+    padding: 12px;
+  }
+}
